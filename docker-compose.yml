@@ -1,6 +1,6 @@
 version: '2'
 services:
-  sstpvpn:
+  ovpn:
     build: ./ovpn
     restart: on-failure
     network_mode: host
