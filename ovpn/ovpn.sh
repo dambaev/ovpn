@@ -1,12 +1,14 @@
 #!/bin/bash -ex
-GW_IP="$1"
-FWD_IP="$2"
+USER="$1"
+PWD="$2"
+GW_IP="$3"
+FWD_IP="$4"
 
 function usage(){
 	echo "$0 <GW_IP> <FORWARD_IP>"
 }
 
-if [ "$GW_IP" == "" ] || [ "$FWD_IP" == "" ]; then
+if [ "$USER" == "" ] || [ "$PWD" == "" ] || [ "$GW_IP" == "" ] || [ "$FWD_IP" == "" ]; then
        usage
        exit 1
 fi
@@ -15,7 +17,9 @@ fi
 ovpn-stop.sh
 
 #run new one
-nohup openvpn --dev tun --remote "$GW_IP" --port 8443 --proto tcp-client --tls-client --ca /etc/openvpn/ca.crt --auth-user-pass --pull &
+echo "$USER" > ~/secret
+echo "$PWD" >> ~/secret
+nohup openvpn --dev tun --remote "$GW_IP" --port 8443 --proto tcp-client --tls-client --ca /etc/openvpn/ca.crt --auth-user-pass ~/secret --pull &
 # wait while ppp0 will be availabe
 TIMEOUT_CNT=60 # timeout seconds
 IFACE=""
@@ -23,6 +27,7 @@ IFACE=""
 while [ "$IFACE" == "" ]; do
 	ip li show dev tun0 2>/dev/null >/dev/null && {
 		IFACE=tun0
+		rm ~/secret
 	} || {
 		TIMEOUT_CNT=$(( $TIMEOUT_CNT - 1))
 		if [ "$TIMEOUT_CNT" == "0" ]; then
