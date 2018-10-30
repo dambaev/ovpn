@@ -25,3 +25,7 @@ in order to disconnect ovpn. Or, simply, shutdown ovpn container
 # Example
 
 	ovpn.sh somevpnuser supersecret some.host.name 10.0.0.1
+
+# Troubleshooting
+
+In case of any issues, look for ./nohup.out
