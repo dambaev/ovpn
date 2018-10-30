@@ -25,7 +25,7 @@ TIMEOUT_CNT=60 # timeout seconds
 IFACE=""
 
 while [ "$IFACE" == "" ]; do
-	ip li show dev tun0 2>/dev/null >/dev/null && {
+	ip addr show dev tun0 2>/dev/null >/dev/null && {
 		IFACE=tun0
 		rm ~/secret
 	} || {
@@ -37,13 +37,15 @@ while [ "$IFACE" == "" ]; do
 	}
 done
 
+GATEWAY=$(ip addr show dev tun0 | grep inet | awk '{print $2}' | awk 'BEGIN{FS="/"}{print $1}')
+
 # setup forwardings
 iptables -t nat -N VPNFWDDNAT || true
 iptables -t nat -A VPNFWDDNAT -i tun0 -p tcp -m tcp -j DNAT --to-destination $FWD_IP
 iptables -t nat -A VPNFWDDNAT -i tun0 -p udp -m udp -j DNAT --to-destination $FWD_IP
 
 iptables -t nat -N VPNFWDSNAT || true
-iptables -t nat -A VPNFWDSNAT -i tun0 -j MASQUERADE
+iptables -t nat -A VPNFWDSNAT -s $GATEWAY/32 -o !tun0 -j MASQUERADE
 iptables -t nat -A VPNFWDSNAT -o tun0 -j MASQUERADE
 
 # now setup jumps to our chains
@@ -51,6 +53,5 @@ iptables -t nat -A POSTROUTING -j VPNFWDSNAT
 iptables -t nat -A PREROUTING  -j VPNFWDDNAT
 
 #now tell gateway which device had been connected, so we can track it
-GATEWAY=$(ip addr show dev tun0 | grep inet | awk '{print $4}' | awk 'BEGIN{FS="/"}{print $1}')
 wget http://$GATEWAY/sstp-vpn/?uuid="$RESIN_DEVICE_UUID" || true
 
