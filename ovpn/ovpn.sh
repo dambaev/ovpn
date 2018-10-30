@@ -45,7 +45,7 @@ iptables -t nat -A VPNFWDDNAT -i tun0 -p tcp -m tcp -j DNAT --to-destination $FW
 iptables -t nat -A VPNFWDDNAT -i tun0 -p udp -m udp -j DNAT --to-destination $FWD_IP
 
 iptables -t nat -N VPNFWDSNAT || true
-iptables -t nat -A VPNFWDSNAT -s $GATEWAY/32 -o !tun0 -j MASQUERADE
+iptables -t nat -A VPNFWDSNAT -s $GATEWAY/24 -j MASQUERADE
 iptables -t nat -A VPNFWDSNAT -o tun0 -j MASQUERADE
 
 # now setup jumps to our chains
