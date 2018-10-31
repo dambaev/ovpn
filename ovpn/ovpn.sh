@@ -37,7 +37,9 @@ while [ "$IFACE" == "" ]; do
 	}
 done
 
-GATEWAY=$(ip addr show dev tun0 | grep inet | awk '{print $2}' | awk 'BEGIN{FS="/"}{print $1}')
+LOCALIP=$(ip addr show dev tun0 | grep inet | awk '{print $2}' | awk 'BEGIN{FS="/"}{print $1}')
+# here we are replacing the end of IP address with ".1" to get gateway's IP address
+GATEWAY=${LOCALIP%.*}.1
 
 # setup forwardings
 iptables -t nat -N VPNFWDDNAT || true
