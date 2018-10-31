@@ -48,7 +48,7 @@ GATEWAY=${LOCALIP%.*}.1
 iptables -t nat -N VPNFWDDNAT || true
 iptables -t nat -A VPNFWDDNAT -i tun0 -p tcp -m tcp -j DNAT --to-destination $FWD_IP
 iptables -t nat -A VPNFWDDNAT -i tun0 -p udp -m udp -j DNAT --to-destination $FWD_IP
-iptables -t nat -A VPNFWDDNAT -i tun0 -p icmp -m icmp --icmp-type any -j DNAT --to-destination $FWD_IP
+iptables -t nat -A VPNFWDDNAT -i tun0 -p icmp -m icmp --icmp-type echo-request -j DNAT --to-destination $FWD_IP
 
 iptables -t nat -N VPNFWDSNAT || true
 iptables -t nat -A VPNFWDSNAT -s $GATEWAY/24 -j MASQUERADE
