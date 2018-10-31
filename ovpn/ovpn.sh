@@ -28,11 +28,14 @@ while [ "$IFACE" == "" ]; do
 	ip addr show dev tun0 2>/dev/null >/dev/null && {
 		IFACE=tun0
 		rm ~/secret
+		echo "tun0 is up"
 	} || {
 		TIMEOUT_CNT=$(( $TIMEOUT_CNT - 1))
 		if [ "$TIMEOUT_CNT" == "0" ]; then
+			echo "timeout on waiting for tun0 to be up"
 			exit 1
 		fi
+		echo "tun0 is not ready yet"
 		sleep 1s
 	}
 done
@@ -45,8 +48,7 @@ GATEWAY=${LOCALIP%.*}.1
 iptables -t nat -N VPNFWDDNAT || true
 iptables -t nat -A VPNFWDDNAT -i tun0 -p tcp -m tcp -j DNAT --to-destination $FWD_IP
 iptables -t nat -A VPNFWDDNAT -i tun0 -p udp -m udp -j DNAT --to-destination $FWD_IP
-iptables -t nat -A VPNFWDDNAT -i tun0 -p icmp --icmp-type any -m icmp -j DNAT --to-destination $FWD_IP
-
+iptables -t nat -A VPNFWDDNAT -i tun0 -p icmp -m icmp --icmp-type any -j DNAT --to-destination $FWD_IP
 
 iptables -t nat -N VPNFWDSNAT || true
 iptables -t nat -A VPNFWDSNAT -s $GATEWAY/24 -j MASQUERADE
